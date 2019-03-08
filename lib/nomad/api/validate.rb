@@ -17,8 +17,9 @@ module Nomad
     #   Nomad.validate.job #=> #<JobValidation ...>
     #
     # @return [JobValidation]
-    def job(payload, **options)
-      json = client.post("/v1/validate/job", payload, options)
+    def job(contents, **options)
+      body = contents.is_a?(Hash) ? JSON.fast_generate(contents) : contents
+      json = client.post("/v1/validate/job", body, options)
       return JobValidation.decode(json)
     end
   end

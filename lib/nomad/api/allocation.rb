@@ -34,6 +34,32 @@ module Nomad
     end
   end
 
+  class DeploymentStatus < Response
+    # @!attribute [r] canary
+    #   If allocation is a canary.
+    #   @return [Boolean]
+    field :Canary, as: :canary
+
+    # @!attribute [r] healthy
+    #   If allocation is healthy
+    #   @return [Boolean]
+    field :Healthy, as: :healthy
+
+    # @!attribute [r] modify_index
+    #   Modify index
+    #   @return [Integer]
+    field :ModifyIndex, as: :modify_index
+
+    # @!attribute [r] timestamp
+    #   Timesteamp.
+    #   @return [String]
+    field :Timestamp, as: :timestamp, load: :string_as_nil
+
+    def healthy?
+      !!healthy
+    end
+  end
+
   class Alloc < Response
     # @!attribute [r] id
     #   The full allocation ID.
@@ -138,7 +164,7 @@ module Nomad
     # @!attribute [r] deployment_status
     #   The deployment status
     #   @return [String]
-    field :DeploymentStatus, as: :deployment_status, load: :string_as_nil
+    field :DeploymentStatus, as: :deployment_status, load: ->(item) { DeploymentStatus.decode(item) }
 
     # @!attribute [r] canary
     #   Whether this is a canary

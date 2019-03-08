@@ -79,19 +79,14 @@ module Nomad
         }.to raise_error(RuntimeError)
       end
 
-      it "updates the servers list" do
+      it "does not update the server list when one of the servers is invalid" do
         subject.update_servers(
           "1.2.3.4:4647",
           "127.0.0.1:4647",
         )
+
         result = subject.servers.sort
-
-        subject.update_servers("127.0.0.1:4647") # reset
-
-        expect(result).to eq([
-          "1.2.3.4:4647",
-          "127.0.0.1:4647",
-        ])
+        expect(result).to eq(["127.0.0.1:4647"])
       end
     end
   end

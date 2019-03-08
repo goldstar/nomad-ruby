@@ -121,6 +121,9 @@ module Nomad
     #   the response body
     def request(verb, path, data = {}, headers = {})
       uri = URI.parse(path)
+      if token
+        headers['X-Nomad-Token'] = token
+      end
       if uri.absolute?
         new_path, uri.path, uri.fragment = uri.path, "", nil
         client = self.class.new(options.merge(
