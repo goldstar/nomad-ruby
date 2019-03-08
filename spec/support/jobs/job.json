@@ -15,18 +15,17 @@
     "TaskGroups": [
       {
         "Name": "group",
-        "Count": 3,
+        "Count": 1,
         "Constraints": null,
         "Tasks": [
           {
             "Name": "task",
-            "Driver": "raw_exec",
+            "Driver": "docker",
             "User": "",
             "Config": {
-              "args": [
-                "1000"
-              ],
-              "command": "/bin/sleep"
+              "image": "alpine",
+              "command": "sleep",
+              "args": [ "10m" ]
             },
             "Constraints": null,
             "Env": {
@@ -124,19 +123,8 @@
             "Vault": null,
             "Templates": [
               {
-                "SourcePath": null,
-                "DestPath": "local/file-1.yml",
-                "EmbeddedTmpl": "key: {{ key \"service/my-key\" }}",
-                "ChangeMode": "signal",
-                "ChangeSignal": "SIGHUP",
-                "Splay": 5000000000,
-                "Perms": "0644",
-                "LeftDelim": null,
-                "RightDelim": null
-              },
-              {
                 "SourcePath": "local/http-echo_0.2.3_SHA256SUMS",
-                "DestPath": "local/file-2.yml",
+                "DestPath": "local/file-1.yml",
                 "EmbeddedTmpl": null,
                 "ChangeMode": "signal",
                 "ChangeSignal": "SIGHUP",
@@ -174,7 +162,7 @@
     "Meta": {
       "foo": "bar"
     },
-    "VaultToken": "root",
+    "VaultToken": null,
     "Status": null,
     "StatusDescription": null,
     "Stable": null,

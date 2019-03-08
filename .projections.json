@@ -1,0 +1,20 @@
+{
+
+  "lib/*.rb":
+  {
+    "type": "lib",
+    "alternate": [
+    "test/{}_test.rb",
+    "test/lib/{}_test.rb",
+    "test/unit/{}_test.rb",
+    "test/{dirname}/test_{basename}.rb",
+    "spec/{}_spec.rb",
+    "spec/lib/{}_spec.rb",
+    "spec/integration/api/{basename}_spec.rb",
+    "spec/unit/{}_spec.rb"
+    ]
+  },
+
+  "spec/integration/*_spec.rb": { "alternate": "lib/nomad/api/{basename}.rb" }
+
+}

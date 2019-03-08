@@ -19,10 +19,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_development_dependency "binding_of_caller"
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "pry"
+  spec.add_development_dependency "pry-byebug"
+  spec.add_development_dependency "pry-rescue"
   spec.add_development_dependency "rake",    "~> 12.0"
   spec.add_development_dependency "rspec",   "~> 3.6"
-  spec.add_development_dependency "yard"
   spec.add_development_dependency "webmock", "~> 3.0"
+  spec.add_development_dependency "yard"
+
 end

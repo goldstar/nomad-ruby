@@ -53,6 +53,11 @@ module Nomad
     #   @return [String]
     field :ID, as: :id
 
+    # @!attribute [r] deployment_id
+    #   The evaluation id.
+    #   @return [String]
+    field :DeploymentID, as: :deployment_id, load: :string_as_nil
+
     # @!attribute [r] priority
     #   The evaluation priority.
     #   @return [Integer]

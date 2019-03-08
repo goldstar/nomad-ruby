@@ -4,7 +4,7 @@ module Nomad
   describe Evaluation do
     subject { nomad_test_client.evaluation }
 
-    before(:context) {
+    before(:all) {
       jobfile = File.read(File.expand_path("../../../support/jobs/job.json", __FILE__))
       nomad_test_client.post("/v1/jobs", jobfile)
     }

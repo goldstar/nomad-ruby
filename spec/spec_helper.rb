@@ -29,6 +29,12 @@ RSpec.configure do |config|
     WebMock.disable_net_connect!(allow_localhost: true)
   end
 
+  config.after(:suite) do
+    nomad_test_client.delete('/v1/job/allocation')
+    nomad_test_client.delete('/v1/job/evaluation')
+    nomad_test_client.delete('/v1/job/job')
+  end
+
   # Ensure our configuration is reset on each run.
   config.before(:each) { Nomad.setup! }
   config.after(:each)  { Nomad.setup! }

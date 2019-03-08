@@ -49,6 +49,33 @@ module Nomad
       json = client.get("/v1/job/#{CGI.escape(name)}", options)
       return JobVersion.decode(json)
     end
+
+    # Parses a job spec in hcl to json
+    #
+    # @param [String] contents
+    #   the raw JSON contents
+    #
+    # @return [JobVersion]
+    def parse(name, contents, **options)
+      body = contents.is_a?(Hash) ? JSON.fast_generate(contents) : contents
+      json = client.post("/v1/jobs/parse", body, options)
+      return json
+    end
+
+    # Plans a job with a given name and job spec
+    #
+    # @param [String] name The job name (ID).
+    # @param [String] contents
+    #   the raw JSON contents
+    # @param [Hash] contents
+    #   a hash of the contents to convert to JSON
+    #
+    # @return [JobPlan]
+    def plan(name, contents, **options)
+      body = contents.is_a?(Hash) ? JSON.fast_generate(contents) : contents
+      json = client.post("/v1/job/#{CGI.escape(name)}/plan", body, options)
+      return JobPlan.decode(json)
+    end
   end
 
   class JobItem < Response
@@ -1030,4 +1057,49 @@ module Nomad
     #   @return [String]
     field :File, as: :file, load: :string_as_nil
   end
+
+  class JobPlan < Response
+    # @!attribute [r] annotations
+    #   Annotations of the plan
+    #   @return [Integer]
+    field :Annotations, as: :annotations, load: :stringify_keys
+
+    # @!attribute [r] created_evals
+    #   Evaluations created during the plan
+    #   @return [Array<Eval>]
+    field :CreatedEvals, as: :created_evals, load: ->(item){
+      Array(item).map { |i| Eval.decode(i) }
+    }
+
+    # @!attribute [r] diff
+    #   Diff of supplied job to running job
+    #   @return [Hash<JobPlanDiff>]
+    field :Diff, as: :diff, load: :stringify_keys # maybe create JobPlanDiff
+
+    # @!attribute [r] failed_tg_allocs
+    #   Failed Task Group Allocations
+    #   @return [Hash<FailedTGAlloc>]
+    field :FailedTGAllocs, as: :failed_tg_allocs #maybe create FailedTGAllocs
+
+    # @!attribute [r] index
+    #   Index of job plan
+    #   @return [Integer]
+    field :Index, as: :index
+
+    # @!attribute [r] job_modify_index
+    #   Job modify index
+    #   @return [Integer]
+    field :JobModifyIndex, as: :job_modify_index
+
+    # @!attribute [r] next_periodic_launch
+    #   Time of next periodic launch
+    #   @return [Timestamp]
+    field :NextPeriodicLaunch, as: :next_periodic_launch
+
+    # @!attribute [r] warnings
+    #   Plan warnings
+    #   @return [String]
+    field :Warnings, as: :warnings, load: :string_as_nil
+  end
+
 end

@@ -1,0 +1,101 @@
+{
+  "Job": {
+    "AllAtOnce": null,
+    "Constraints": null,
+    "CreateIndex": null,
+    "Datacenters": [
+      "dc1"
+    ],
+    "Dispatched": false,
+    "ID": "deployment",
+    "JobModifyIndex": null,
+    "Meta": null,
+    "Migrate": null,
+    "ModifyIndex": null,
+    "Name": "job",
+    "Namespace": null,
+    "ParameterizedJob": null,
+    "ParentID": null,
+    "Payload": null,
+    "Periodic": null,
+    "Priority": null,
+    "Region": null,
+    "Reschedule": null,
+    "Stable": null,
+    "Status": null,
+    "StatusDescription": null,
+    "Stop": null,
+    "SubmitTime": null,
+    "TaskGroups": [
+      {
+        "Constraints": null,
+        "Count": 1,
+        "EphemeralDisk": null,
+        "Meta": null,
+        "Migrate": null,
+        "Name": "deployment",
+        "ReschedulePolicy": null,
+        "RestartPolicy": null,
+        "Tasks": [
+          {
+            "Artifacts": null,
+            "Config": {
+              "image": "alpine",
+              "command": "sleep",
+              "args": [ "10m" ]
+            },
+            "Constraints": null,
+            "DispatchPayload": null,
+            "Driver": "docker",
+            "Env": null,
+            "KillSignal": "",
+            "KillTimeout": null,
+            "Leader": false,
+            "LogConfig": null,
+            "Meta": null,
+            "Name": "task",
+            "Resources": {
+              "CPU": 100,
+              "DiskMB": null,
+              "IOPS": null,
+              "MemoryMB": 128,
+              "Networks": [
+                {
+                  "CIDR": "",
+                  "Device": "",
+                  "DynamicPorts": [
+                    {
+                      "Label": "http",
+                      "Value": 0
+                    }
+                  ],
+                  "IP": "",
+                  "MBits": null,
+                  "ReservedPorts": null
+                }
+              ]
+            },
+            "Services": null,
+            "ShutdownDelay": 0,
+            "Templates": null,
+            "User": "",
+            "Vault": null
+          }
+        ]
+      }
+    ],
+    "Type": null,
+    "Update": {
+      "AutoRevert": null,
+      "Canary": null,
+      "HealthCheck": null,
+      "HealthyDeadline": 30000000000,
+      "MaxParallel": 1,
+      "MinHealthyTime": 10000000000,
+      "ProgressDeadline": 60000000000,
+      "Stagger": null
+    },
+    "VaultToken": null,
+    "Version": null
+  }
+}

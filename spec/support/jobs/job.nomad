@@ -98,13 +98,6 @@ job "job" {
       }
 
       template {
-        data          = "key: {{ key \"service/my-key\" }}"
-        destination   = "local/file-1.yml"
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
-      }
-
-      template {
         source        = "local/http-echo_0.2.3_SHA256SUMS"
         destination   = "local/file-2.yml"
         change_mode   = "signal"
