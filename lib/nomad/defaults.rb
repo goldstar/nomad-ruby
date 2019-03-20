@@ -169,6 +169,10 @@ module Nomad
       def timeout
         ENV["NOMAD_TIMEOUT"]
       end
+
+      def token
+        ENV["NOMAD_TOKEN"]
+      end
     end
   end
 end

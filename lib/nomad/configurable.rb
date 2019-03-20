@@ -23,6 +23,7 @@ module Nomad
         :ssl_verify,
         :ssl_timeout,
         :timeout,
+        :token,
       ]
     end
 
