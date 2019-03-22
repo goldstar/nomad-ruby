@@ -2,6 +2,7 @@ require "cgi"
 require "json"
 require "net/http"
 require "net/https"
+require "faraday"
 require "uri"
 
 require_relative "configurable"
@@ -134,39 +135,39 @@ module Nomad
 
       # Build the URI and request object from the given information
       path = build_uri(verb, path, data)
-      req = class_for_request(verb).new(path)
 
       # Get a list of headers
       headers = DEFAULT_HEADERS.merge(headers)
 
       # Add headers
       headers.each do |key, value|
-        req.add_field(key, value)
+        connection.headers[key] = value
       end
 
       # Setup PATCH/POST/PUT
       if [:patch, :post, :put].include?(verb)
         if data.respond_to?(:read)
-          req.content_length = data.size
-          req.body_stream = data
+          connection.content_length = data.size
+          connection.body_stream = data
         elsif data.is_a?(Hash)
-          req.form_data = data
+          connection.form_data = data
         else
-          req.body = data
+          connection.body = data
         end
       end
 
       begin
-        response = connection.request(req)
-        case response
-        when Net::HTTPRedirection
+        response = connection.public_send(verb, path, data)
+        require 'pry'; binding.pry
+        case response.status
+        when /30/
           # On a redirect of a GET or HEAD request, the URL already contains
           # the data as query string parameters.
           if [:head, :get].include?(verb)
             data = {}
           end
-          request(verb, response[LOCATION_HEADER], data, headers)
-        when Net::HTTPSuccess
+          request(verb, response.headers[LOCATION_HEADER], data, headers)
+        when /20/
           success(response)
         else
           error(response)
@@ -181,59 +182,45 @@ module Nomad
       # to +nil+, we can just pass it to the initializer method instead of doing
       # crazy strange conditionals.
       uri = URI.parse(address)
-      connection = Net::HTTP.new(uri.host, uri.port,
-        proxy_address, proxy_port, proxy_username, proxy_password)
-
-      # Use a custom open timeout
-      if open_timeout || timeout
-        connection.open_timeout = (open_timeout || timeout).to_i
-      end
-
-      # Use a custom read timeout
-      if read_timeout || timeout
-        connection.read_timeout = (read_timeout || timeout).to_i
-      end
-
-      # Also verify peer (this is the default).
-      connection.verify_mode = OpenSSL::SSL::VERIFY_PEER
-
-      # Apply SSL, if applicable
-      if uri.scheme == "https"
-        # Turn on SSL
-        connection.use_ssl = true
-
-        # Nomad requires TLS1.2
-        connection.ssl_version = "TLSv1_2"
-
-        # Only use secure ciphers
-        connection.ciphers = ssl_ciphers
-
-        # Custom pem files, no problem!
-        pem = ssl_pem_contents || ssl_pem_file ? File.read(ssl_pem_file) : nil
-        if pem
-          connection.cert = OpenSSL::X509::Certificate.new(pem)
-          connection.key = OpenSSL::PKey::RSA.new(pem, ssl_pem_passphrase)
+      connection = Faraday.new(address) do |c|
+        if proxy_address && proxy_port
+          proxy_options = { uri: "#{proxy_address}:#{proxy_port}" }
+          if proxy_username && proxy_password
+            proxy_options = proxy_options.merge({user: proxy_username, password: proxy_password})
+          end
+          c.proxy proxy_options
         end
 
-        # Use custom CA cert for verification
-        if ssl_ca_cert
-          connection.ca_file = ssl_ca_cert
+        # Use a custom open timeout
+        if open_timeout || timeout
+          c.options.open_timeout = (open_timeout || timeout).to_i
         end
 
-        # Use custom CA path that contains CA certs
-        if ssl_ca_path
-          connection.ca_path = ssl_ca_path
+        # Use a custom read timeout
+        if read_timeout || timeout
+          c.options.timeout = (read_timeout || timeout).to_i
         end
 
-        # Naughty, naughty, naughty! Don't blame me when someone hops in
-        # and executes a MITM attack!
-        if !ssl_verify
-          connection.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-
-        # Use custom timeout for connecting and verifying via SSL
-        if ssl_timeout || timeout
-          connection.ssl_timeout = (ssl_timeout || timeout).to_i
+        if uri.scheme == "https"
+          ssl = {}.tap do |ssl|
+            ssl[:use_ssl] = true
+            ssl[:version] = "TLSv1_2"
+            pem = ssl_pem_contents || ssl_pem_file ? File.read(ssl_pem_file) : nil
+            if pem
+              ssl[:client_cert] = OpenSSL::X509::Certificate.new(pem)
+              ssl[:client_key] = OpenSSL::PKey::RSA.new(pem, ssl_pem_passphrase)
+            end
+            if ssl_ca_cert
+              c[:ca_file] = ssl_ca_cert
+            end
+            if ssl_ca_path
+              c[:ca_path] = ssl_ca_path
+            end
+            if !ssl_verify
+              c[:verify] = false
+            end
+          end
+          c.ssl = ssl
         end
       end
 
@@ -276,8 +263,8 @@ module Nomad
     #   the HTTP verb to create a class from
     #
     # @return [Class]
-    def class_for_request(verb)
-      Net::HTTP.const_get(verb.to_s.capitalize)
+    def class_for_request(verb, body={})
+      connection.public_send(verb.downcase.to_sym, body)
     end
 
     # Convert the given hash to a list of query string parameters. Each key and
